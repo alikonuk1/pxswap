@@ -3,8 +3,10 @@ pragma solidity 0.8.15;
 
 import {SwapData} from "./SwapData.sol";
 import {Ownable} from "./utils/Ownable.sol";
+import {PxswapERC721Receiver} from "./utils/PxswapERC721Receiver.sol";
+import {ERC721Interactions} from "./utils/ERC721Interactions.sol";
 
-contract Pxswap is SwapData, Ownable{
+contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC721Interactions{
 
     address public protocol;
     // 1% of amount
@@ -18,42 +20,54 @@ contract Pxswap is SwapData, Ownable{
     receive() external payable {}
     fallback() external payable {}
 
-    function openBuy(address nftAddress) public payable {
+    function openBuy(address nftAddress, bool spesificId, uint256 id) public payable {
         Buy memory buy;
         buy.buyer = msg.sender;
         buy.nft = nftAddress;
+        buy.spesificId = spesificId;
+        buy.tokenId = id;
         buy.amount = msg.value;
         buy.active = true;
         buys.push(buy);
     }
 
-    function openSell(address nftAddress, uint256 tokenId, uint256 amount) public {
+    function openSell(address nft, uint256 tokenId, uint256 amount) public {
         Sell memory sell;
-        //TODO: transfer nft
+        _setNftContract(nft);
+        require(_nftBalance(msg.sender) >= 1, "Dont have enough nft!");
+        _transferNft(msg.sender, address(this), tokenId);
         sell.seller = msg.sender;
-        sell.nft = nftAddress;
+        sell.nft = nft;
         sell.tokenId = tokenId;
         sell.amount = amount;
         sell.active = true;
         sells.push(sell);
     }
 
-    function sellAtomic(uint256 id) public {
+    function sellAtomic(uint256 id, address nft, uint256 tokenId) public {
         Buy memory buy_ = buys[id];
         require(buy_.active == true, "Buy order is not active!");
+        require(buy_.nft == nft, "Wrong nft address!");
+        if(buy_.spesificId == true){
+            buy_.tokenId == tokenId;
+        }
+        _setNftContract(nft);
+        require(_nftBalance(msg.sender) >= 1, "Dont have enough nft!");
+
+        _transferNft(msg.sender, buy_.buyer, tokenId);
 
         uint256 amount = buy_.amount;
         uint256 protocolFee = amount / fee;
         uint256 amount_ = amount - protocolFee;
         address buyer = buy_.buyer;
         
+        buy_.active = false;
+        
         (bool result0,) = payable(msg.sender).call{gas: (gasleft() - 10000), value: amount_}("");
         require(result0, "Call must return true");
 
         (bool result1,) = payable(protocol).call{gas: (gasleft() - 10000), value: protocolFee}("");
         require(result1, "Call must return true");
-
-        buy_.active = false;
 
     }
 
@@ -73,6 +87,11 @@ contract Pxswap is SwapData, Ownable{
 
         (bool result1, ) = payable(protocol).call{gas: (gasleft() - 10000), value: protocolFee}("");
         require(result1, "Call must return true!");
+
+        sell_.active = false;
+
+        _setNftContract(sell_.nft);
+        _transferNft(address(this), msg.sender, sell_.tokenId);
 
     }
 

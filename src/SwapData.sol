@@ -5,6 +5,8 @@ contract SwapData {
     struct Buy {
         address buyer;
         address nft;
+        bool spesificId;
+        uint256 tokenId;
         uint256 amount;
         bool active;
     }
