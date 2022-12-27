@@ -53,10 +53,6 @@ contract Pxswap is SwapData, Ownable{
         (bool result1,) = payable(protocol).call{gas: (gasleft() - 10000), value: protocolFee}("");
         require(result1, "Call must return true");
 
-/*         payable(msg.sender).transfer(amount);
-
-        payable(protocol).transfer(protocolFee); */
-
         buy_.active = false;
 
     }
