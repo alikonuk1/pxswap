@@ -38,6 +38,8 @@ contract PxswapTest is Test {
         
         vm.startPrank(seller1);
         bayc.mintTo(seller1);
+        bayc.mintTo(seller1);
+        bayc.mintTo(seller1);
         vm.stopPrank();
         vm.startPrank(seller2);
         bayc.mintTo(seller2);
@@ -63,10 +65,56 @@ contract PxswapTest is Test {
         vm.stopPrank();
         
         assertEq(bayc.balanceOf(buyer1), 1);
-        assertEq(bayc.balanceOf(seller1), 0);
+        assertEq(bayc.balanceOf(seller1), 2);
         assertEq(address(px).balance, 0 ether);
         assertEq(address(protocol).balance, 3 ether);
         assertEq(address(seller1).balance, 1026 ether);
+    }
+
+    function testRevert_OpenBuy_SellAtomicWrongId() public {
+        vm.startPrank(buyer1);
+        px.openBuy{value: 30 ether}(address(bayc), true, 3);
+        vm.stopPrank();
+
+        assertEq(address(px).balance, 30 ether);
+        assertEq(address(buyer1).balance, 969 ether);
+        assertEq(address(protocol).balance, 0 ether);
+        assertEq(bayc.balanceOf(buyer1), 0);
+
+        vm.startPrank(seller1);
+        bayc.approve(address(px), 1);
+        vm.expectRevert("Wrong token id!");
+        px.sellAtomic(0, address(bayc), 1);
+        vm.stopPrank();
+
+    }
+
+    function testRevert_OpenBuy_SellAtomicBidClosed() public {
+        vm.startPrank(buyer1);
+        px.openBuy{value: 30 ether}(address(bayc), false, 3);
+        vm.stopPrank();
+
+        assertEq(address(px).balance, 30 ether);
+        assertEq(address(buyer1).balance, 969 ether);
+        assertEq(address(protocol).balance, 0 ether);
+        assertEq(bayc.balanceOf(buyer1), 0);
+
+        vm.startPrank(seller1);
+        bayc.approve(address(px), 1);
+        px.sellAtomic(0, address(bayc), 1);
+        vm.stopPrank();
+        
+        assertEq(bayc.balanceOf(buyer1), 1);
+        assertEq(bayc.balanceOf(seller1), 2);
+        assertEq(address(px).balance, 0 ether);
+        assertEq(address(protocol).balance, 3 ether);
+        assertEq(address(seller1).balance, 1026 ether);
+
+        vm.startPrank(seller2);
+        bayc.approve(address(px), 4);
+        vm.expectRevert("Buy order is not active!");
+        px.sellAtomic(0, address(bayc), 4);
+        vm.stopPrank();
     }
 
     function testSuccess_OpenBuy_SellAtomicSpesificId() public {
@@ -85,14 +133,14 @@ contract PxswapTest is Test {
         vm.stopPrank();
         
         assertEq(bayc.balanceOf(buyer1), 1);
-        assertEq(bayc.balanceOf(seller1), 0);
+        assertEq(bayc.balanceOf(seller1), 2);
         assertEq(address(px).balance, 0 ether);
         assertEq(address(protocol).balance, 3 ether);
         assertEq(address(seller1).balance, 1026 ether);
     }
 
      function testSuccess_OpenSell_BuyAtomic() public {
-        assertEq(bayc.balanceOf(seller1), 1);
+        assertEq(bayc.balanceOf(seller1), 3);
         assertEq(bayc.balanceOf(address(px)), 0);
 
         vm.startPrank(seller1);
@@ -100,7 +148,7 @@ contract PxswapTest is Test {
         px.openSell(address(bayc), 1, 10 ether);
         vm.stopPrank();
 
-        assertEq(bayc.balanceOf(seller1), 0);
+        assertEq(bayc.balanceOf(seller1), 2);
         assertEq(bayc.balanceOf(address(px)), 1);
         assertEq(address(px).balance, 0 ether);
         assertEq(address(protocol).balance, 0 ether);
@@ -109,12 +157,43 @@ contract PxswapTest is Test {
         px.buyAtomic{value: 11 ether}(0);
         vm.stopPrank();
         
-        assertEq(bayc.balanceOf(seller1), 0);
+        assertEq(bayc.balanceOf(seller1), 2);
         assertEq(bayc.balanceOf(address(px)), 0);
         assertEq(bayc.balanceOf(buyer1), 1);
         assertEq(address(px).balance, 0 ether);
         assertEq(address(protocol).balance, 1 ether);
         assertEq(address(seller1).balance, 1009 ether);
+    }
+
+    function testRevert_OpenSell_BuyAtomicBidClosed() public {
+        assertEq(bayc.balanceOf(seller1), 3);
+        assertEq(bayc.balanceOf(address(px)), 0);
+
+        vm.startPrank(seller1);
+        bayc.approve(address(px), 1);
+        px.openSell(address(bayc), 1, 10 ether);
+        vm.stopPrank();
+
+        assertEq(bayc.balanceOf(seller1), 2);
+        assertEq(bayc.balanceOf(address(px)), 1);
+        assertEq(address(px).balance, 0 ether);
+        assertEq(address(protocol).balance, 0 ether);
+
+        vm.startPrank(buyer1);
+        px.buyAtomic{value: 11 ether}(0);
+        vm.stopPrank();
+        
+        assertEq(bayc.balanceOf(seller1), 2);
+        assertEq(bayc.balanceOf(address(px)), 0);
+        assertEq(bayc.balanceOf(buyer1), 1);
+        assertEq(address(px).balance, 0 ether);
+        assertEq(address(protocol).balance, 1 ether);
+        assertEq(address(seller1).balance, 1009 ether);
+
+        vm.startPrank(seller3);
+        vm.expectRevert("Sell order is not active!");
+        px.buyAtomic{value: 11 ether}(0);
+        vm.stopPrank();
     }
 
     function testSuccess_setProtocol() public {
