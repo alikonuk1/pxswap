@@ -13,7 +13,7 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC721Interactions{
     // if 1000000000000000000 = 1 eth
     //     100000000000000000 = 0.1 eth
     // amount / 10 = protocolFee
-    uint256 public fee = 10; // %1
+    uint256 public fee = 100; // %1
     Buy[] public buys;
     Sell[] public sells;
 

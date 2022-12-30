@@ -67,8 +67,8 @@ contract PxswapTest is Test {
         assertEq(bayc.balanceOf(buyer1), 1);
         assertEq(bayc.balanceOf(seller1), 2);
         assertEq(address(px).balance, 0 ether);
-        assertEq(address(protocol).balance, 3 ether);
-        assertEq(address(seller1).balance, 1026 ether);
+        assertEq(address(protocol).balance, 0.3 ether);
+        assertEq(address(seller1).balance, 1028.7 ether);
     }
 
     function testRevert_OpenBuy_SellAtomicWrongId() public {
@@ -107,8 +107,8 @@ contract PxswapTest is Test {
         assertEq(bayc.balanceOf(buyer1), 1);
         assertEq(bayc.balanceOf(seller1), 2);
         assertEq(address(px).balance, 0 ether);
-        assertEq(address(protocol).balance, 3 ether);
-        assertEq(address(seller1).balance, 1026 ether);
+        assertEq(address(protocol).balance, 0.3 ether);
+        assertEq(address(seller1).balance, 1028.7 ether);
 
         vm.startPrank(seller2);
         bayc.approve(address(px), 4);
@@ -135,8 +135,8 @@ contract PxswapTest is Test {
         assertEq(bayc.balanceOf(buyer1), 1);
         assertEq(bayc.balanceOf(seller1), 2);
         assertEq(address(px).balance, 0 ether);
-        assertEq(address(protocol).balance, 3 ether);
-        assertEq(address(seller1).balance, 1026 ether);
+        assertEq(address(protocol).balance, 0.3 ether);
+        assertEq(address(seller1).balance, 1028.7 ether);
     }
 
      function testSuccess_OpenSell_BuyAtomic() public {
@@ -161,8 +161,8 @@ contract PxswapTest is Test {
         assertEq(bayc.balanceOf(address(px)), 0);
         assertEq(bayc.balanceOf(buyer1), 1);
         assertEq(address(px).balance, 0 ether);
-        assertEq(address(protocol).balance, 1 ether);
-        assertEq(address(seller1).balance, 1009 ether);
+        assertEq(address(protocol).balance, 0.11 ether);
+        assertEq(address(seller1).balance, 1009.89 ether);
     }
 
     function testRevert_OpenSell_BuyAtomicBidClosed() public {
@@ -187,8 +187,8 @@ contract PxswapTest is Test {
         assertEq(bayc.balanceOf(address(px)), 0);
         assertEq(bayc.balanceOf(buyer1), 1);
         assertEq(address(px).balance, 0 ether);
-        assertEq(address(protocol).balance, 1 ether);
-        assertEq(address(seller1).balance, 1009 ether);
+        assertEq(address(protocol).balance, 0.11 ether);
+        assertEq(address(seller1).balance, 1009.89 ether);
 
         vm.startPrank(seller3);
         vm.expectRevert("Sell order is not active!");
@@ -216,7 +216,7 @@ contract PxswapTest is Test {
     }
 
     function testSucces_setFee() public {
-        assertEq(px.fee(), 10);
+        assertEq(px.fee(), 100);
 
         vm.startPrank(creator);
         px.setFee(30);
@@ -226,7 +226,7 @@ contract PxswapTest is Test {
     }
 
     function testRevert_setFee_NonOwner() public {
-        assertEq(px.fee(), 10);
+        assertEq(px.fee(), 100);
 
         vm.startPrank(hacker);
         vm.expectRevert("Ownable: caller is not the owner");
