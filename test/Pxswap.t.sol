@@ -161,8 +161,8 @@ contract PxswapTest is Test {
         assertEq(bayc.balanceOf(address(px)), 0);
         assertEq(bayc.balanceOf(buyer1), 1);
         assertEq(address(px).balance, 0 ether);
-        assertEq(address(protocol).balance, 0.11 ether);
-        assertEq(address(seller1).balance, 1009.89 ether);
+        assertEq(address(protocol).balance, 0.1 ether);
+        assertEq(address(seller1).balance, 1009 ether);
     }
 
     function testRevert_OpenSell_BuyAtomicBidClosed() public {
