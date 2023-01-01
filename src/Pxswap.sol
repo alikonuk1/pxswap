@@ -50,9 +50,9 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC721Interactions{
         if(buys[id].spesificId == true){
             require(buys[id].tokenId == tokenId, "Wrong token id!");
         }
+        buys[id].active = false;
         _setNftContract(nft);
         require(_nftBalance(msg.sender) >= 1, "Dont have enough nft!");
-        buys[id].active = false;
 
         _transferNft(msg.sender, buys[id].buyer, tokenId);
 
@@ -71,6 +71,7 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC721Interactions{
 
     function buyAtomic(uint256 id) public payable {
         require(sells[id].active == true, "Sell order is not active!");
+        sells[id].active = false;
 
         uint256 amount = sells[id].amount;
         uint256 protocolFee = amount / fee;
@@ -78,7 +79,6 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC721Interactions{
         address seller = sells[id].seller;
 
         require(msg.value >= amount_, "Low value call!");
-        sells[id].active = false;
 
         (bool result0, ) = payable(seller).call{gas: (gasleft() - 10000), value: amount}("");
         require(result0, "Call must return true!");

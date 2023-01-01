@@ -152,9 +152,10 @@ contract PxswapTest is Test {
         assertEq(bayc.balanceOf(address(px)), 1);
         assertEq(address(px).balance, 0 ether);
         assertEq(address(protocol).balance, 0 ether);
+        assertEq(address(seller1).balance, 999 ether);
 
         vm.startPrank(buyer1);
-        px.buyAtomic{value: 11 ether}(0);
+        px.buyAtomic{value: 10.1 ether}(0);
         vm.stopPrank();
         
         assertEq(bayc.balanceOf(seller1), 2);
@@ -180,15 +181,15 @@ contract PxswapTest is Test {
         assertEq(address(protocol).balance, 0 ether);
 
         vm.startPrank(buyer1);
-        px.buyAtomic{value: 11 ether}(0);
+        px.buyAtomic{value: 10.1 ether}(0);
         vm.stopPrank();
         
         assertEq(bayc.balanceOf(seller1), 2);
         assertEq(bayc.balanceOf(address(px)), 0);
         assertEq(bayc.balanceOf(buyer1), 1);
         assertEq(address(px).balance, 0 ether);
-        assertEq(address(protocol).balance, 0.11 ether);
-        assertEq(address(seller1).balance, 1009.89 ether);
+        assertEq(address(protocol).balance, 0.1 ether);
+        assertEq(address(seller1).balance, 1009 ether);
 
         vm.startPrank(seller3);
         vm.expectRevert("Sell order is not active!");
