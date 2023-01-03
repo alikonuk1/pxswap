@@ -8,6 +8,11 @@ import {ERC721Interactions} from "./utils/ERC721Interactions.sol";
 
 contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC721Interactions{
 
+    event OpenBuy(address nft, uint256 amount, bool spesificId, uint256 id);
+    event OpenSell(address nft, uint256 amount, uint256 id);
+    event SoldAtomic(address atomicSeller, uint256 buysId);
+    event BoughtAtomic(address atomicBuyer, uint256 sellsId);
+
     address public protocol;
     // 1% of amount
     // if 1000000000000000000 = 1 eth
@@ -29,6 +34,8 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC721Interactions{
         buy.amount = msg.value;
         buy.active = true;
         buys.push(buy);
+
+        emit OpenBuy(nftAddress, msg.value, spesificId, id);
     }
 
     function openSell(address nft, uint256 tokenId, uint256 amount) public {
@@ -42,6 +49,8 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC721Interactions{
         sell.amount = amount;
         sell.active = true;
         sells.push(sell);
+
+        emit OpenSell(nft, amount, tokenId);
     }
 
     function sellAtomic(uint256 id, address nft, uint256 tokenId) public {
@@ -67,6 +76,8 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC721Interactions{
         (bool result1,) = payable(protocol).call{gas: (gasleft() - 10000), value: protocolFee}("");
         require(result1, "Call must return true");
 
+        emit SoldAtomic(msg.sender, id);
+
     }
 
     function buyAtomic(uint256 id) public payable {
@@ -88,6 +99,8 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC721Interactions{
 
         _setNftContract(sells[id].nft);
         _transferNft(address(this), msg.sender, sells[id].tokenId);
+
+        emit BoughtAtomic(msg.sender, id);
 
     }
 
