@@ -235,5 +235,38 @@ contract PxswapTest is Test {
         vm.stopPrank();
     }
 
+    // FUZZzzZZzzZZzzZZzzZZzzZZzz
+
+/*     function testSuccess_OpenBuy_Fuzz(address buyer, address seller) public {
+        vm.assume(address(buyer) =! address(0));
+        vm.assume(address(seller) =! address(0));
+
+        vm.deal(buyer, 999 ether);
+        vm.deal(seller, 999 ether);
+
+        vm.startPrank(seller);
+        bayc.mintTo(seller);
+        vm.stopPrank();
+
+        vm.startPrank(buyer);
+        px.openBuy{value: 30 ether}(address(bayc), false, 3);
+        vm.stopPrank();
+
+        assertEq(address(px).balance, 30 ether);
+        assertEq(address(buyer).balance, 969 ether);
+        assertEq(address(protocol).balance, 0 ether);
+        assertEq(bayc.balanceOf(buyer), 0);
+
+        vm.startPrank(seller);
+        bayc.approve(address(px), 1);
+        px.sellAtomic(0, address(bayc), 1);
+        vm.stopPrank();
+        
+        assertEq(bayc.balanceOf(buyer), 1);
+        assertEq(bayc.balanceOf(seller), 2);
+        assertEq(address(px).balance, 0 ether);
+        assertEq(address(protocol).balance, 0.3 ether);
+        assertEq(address(seller).balance, 1028.7 ether);
+    } */
 }
 
