@@ -7,10 +7,7 @@ import "lib/openzeppelin-contracts/contracts/utils/Strings.sol";
 contract MockERC721 is ERC721 {
     uint256 public currentTokenId;
 
-    constructor(
-        string memory _name,
-        string memory _symbol
-    ) ERC721(_name, _symbol) {}
+    constructor(string memory _name, string memory _symbol) ERC721(_name, _symbol) {}
 
     function mintTo(address recipient) public payable returns (uint256) {
         uint256 newItemId = ++currentTokenId;

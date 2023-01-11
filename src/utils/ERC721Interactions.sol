@@ -4,12 +4,11 @@ pragma solidity 0.8.15;
 import "lib/openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
 
 contract ERC721Interactions {
-    event NftSet(address setter, address nft);
+    event NftSet(address indexed setter, address indexed nft);
 
     address private nft;
 
     function _setNftContract(address _nft) internal {
-/*         require(nft != _nft, "ERC721Interactions: The new address is the same as the old one"); */
         emit NftSet(msg.sender, _nft);
         nft = _nft;
     }

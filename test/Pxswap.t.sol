@@ -5,7 +5,6 @@ import "lib/forge-std/src/Test.sol";
 import "../src/Pxswap.sol";
 import "./mock/mockERC721.sol";
 
-
 contract PxswapTest is Test {
     Pxswap px;
     MockERC721 bayc;
@@ -35,7 +34,7 @@ contract PxswapTest is Test {
         vm.deal(buyer2, 999 ether);
         vm.deal(buyer3, 999 ether);
         vm.deal(hacker, 9999 ether);
-        
+
         vm.startPrank(seller1);
         bayc.mintTo(seller1);
         bayc.mintTo(seller1);
@@ -63,7 +62,7 @@ contract PxswapTest is Test {
         bayc.approve(address(px), 1);
         px.sellAtomic(0, address(bayc), 1);
         vm.stopPrank();
-        
+
         assertEq(bayc.balanceOf(buyer1), 1);
         assertEq(bayc.balanceOf(seller1), 2);
         assertEq(address(px).balance, 0 ether);
@@ -86,7 +85,6 @@ contract PxswapTest is Test {
         vm.expectRevert("Wrong token id!");
         px.sellAtomic(0, address(bayc), 1);
         vm.stopPrank();
-
     }
 
     function testRevert_OpenBuy_SellAtomicBidClosed() public {
@@ -103,7 +101,7 @@ contract PxswapTest is Test {
         bayc.approve(address(px), 1);
         px.sellAtomic(0, address(bayc), 1);
         vm.stopPrank();
-        
+
         assertEq(bayc.balanceOf(buyer1), 1);
         assertEq(bayc.balanceOf(seller1), 2);
         assertEq(address(px).balance, 0 ether);
@@ -131,7 +129,7 @@ contract PxswapTest is Test {
         bayc.approve(address(px), 1);
         px.sellAtomic(0, address(bayc), 1);
         vm.stopPrank();
-        
+
         assertEq(bayc.balanceOf(buyer1), 1);
         assertEq(bayc.balanceOf(seller1), 2);
         assertEq(address(px).balance, 0 ether);
@@ -139,7 +137,7 @@ contract PxswapTest is Test {
         assertEq(address(seller1).balance, 1028.7 ether);
     }
 
-     function testSuccess_OpenSell_BuyAtomic() public {
+    function testSuccess_OpenSell_BuyAtomic() public {
         assertEq(bayc.balanceOf(seller1), 3);
         assertEq(bayc.balanceOf(address(px)), 0);
 
@@ -157,7 +155,7 @@ contract PxswapTest is Test {
         vm.startPrank(buyer1);
         px.buyAtomic{value: 10.1 ether}(0);
         vm.stopPrank();
-        
+
         assertEq(bayc.balanceOf(seller1), 2);
         assertEq(bayc.balanceOf(address(px)), 0);
         assertEq(bayc.balanceOf(buyer1), 1);
@@ -183,7 +181,7 @@ contract PxswapTest is Test {
         vm.startPrank(buyer1);
         px.buyAtomic{value: 10.1 ether}(0);
         vm.stopPrank();
-        
+
         assertEq(bayc.balanceOf(seller1), 2);
         assertEq(bayc.balanceOf(address(px)), 0);
         assertEq(bayc.balanceOf(buyer1), 1);
@@ -236,6 +234,4 @@ contract PxswapTest is Test {
     }
 
     // TODO: FUZZzzZZzzZZzzZZzzZZzzZZzz
-
 }
-

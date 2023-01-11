@@ -18,10 +18,10 @@ contract ERC20Interactions {
         return token;
     }
 
-    function _balance(address owner) internal view returns (uint256) {
+    function _tokenBalance(address owner) internal view returns (uint256) {
         IERC20 _token = IERC20(token);
-        uint256 balance = _token.balanceOf(owner);
-        return balance;
+        uint256 tokenBalance = _token.balanceOf(owner);
+        return tokenBalance;
     }
 
     function _transferTokens(address from, address to, uint256 id) internal {
