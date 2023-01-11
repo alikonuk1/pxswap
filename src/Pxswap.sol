@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity 0.8.15;
 
 import {SwapData} from "./SwapData.sol";
@@ -7,6 +7,12 @@ import {ERC20Interactions} from "./utils/ERC20Interactions.sol";
 import {ERC721Interactions} from "./utils/ERC721Interactions.sol";
 import {PxswapERC721Receiver} from "./utils/PxswapERC721Receiver.sol";
 
+/**
+  * @title Pxswap
+  * @author Pxswap Team
+  * @dev This contract is for buying and selling non-fungible tokens (NFTs)
+  * through atomic swaps
+  */
 contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC721Interactions {
     event OpenBuy(address nft, uint256 amount, bool spesificId, uint256 id);
     event CancelBuy(uint256 id);
