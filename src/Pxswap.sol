@@ -17,6 +17,7 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC721Interactions {
     event OpenBuy(address nft, uint256 amount, bool spesificId, uint256 id);
     event CancelBuy(uint256 id);
     event CancelSell(uint256 id);
+    event CancelSwap(uint256 id);
     event OpenSell(address nft, uint256 amount, uint256 id);
     event SoldAtomic(address atomicSeller, uint256 buysId);
     event BoughtAtomic(address atomicBuyer, uint256 sellsId);
@@ -78,7 +79,13 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC721Interactions {
     }
 
     function cancelSwap(uint256 id) public {
+        Swap storage swap = swaps[id];
+        require(msg.sender == swap.seller, "Unauthorized call, cant cancel swap!" );
+        require(swap.active == true, "Swap is not active!");
 
+        swap.active = false;
+
+        emit CancelSwap(id);
     }
 
     function acceptSwap(uint256 id) public {
