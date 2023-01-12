@@ -8,11 +8,11 @@ import {ERC721Interactions} from "./utils/ERC721Interactions.sol";
 import {PxswapERC721Receiver} from "./utils/PxswapERC721Receiver.sol";
 
 /**
-  * @title pxswap
-  * @author pxswap
-  * @dev This contract is for buying and selling non-fungible tokens (NFTs)
-  * through atomic swaps
-  */
+ * @title pxswap
+ * @author pxswap
+ * @dev This contract is for buying and selling non-fungible tokens (NFTs)
+ * through atomic swaps
+ */
 contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC20Interactions, ERC721Interactions {
     event OpenBuy(address nft, uint256 amount, bool spesificId, uint256 id);
     event CancelBuy(uint256 id);
@@ -41,12 +41,15 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC20Interactions, E
         address nftGiven,
         uint256 giveId,
         bool isNft,
-/*         bool spesificId, */
-        address wantNft, 
-        address wantToken, 
+        /*         bool spesificId, */
+        address wantNft,
+        address wantToken,
         uint256 amount
-/*         uint256 wantId  */
-    ) public noReentrancy {
+    )
+        /*         uint256 wantId  */
+        public
+        noReentrancy
+    {
         _setNftContract(nftGiven);
         require(_nftBalance(msg.sender) >= 1, "Dont have enough nft!");
         _transferNft(msg.sender, address(this), giveId);
@@ -57,22 +60,21 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC20Interactions, E
         swap.giveId = giveId;
         swap.isNft = isNft;
 
-        if(isNft == true){
+        if (isNft == true) {
             swap.wantNft = wantNft;
-            swap.active = true; 
+            swap.active = true;
             swaps.push(swap);
-        }
-        else{
-        swap.wantToken = wantToken;
-        swap.amount = amount;
-        swap.active = true;
-        swaps.push(swap);
+        } else {
+            swap.wantToken = wantToken;
+            swap.amount = amount;
+            swap.active = true;
+            swaps.push(swap);
         }
     }
 
     function cancelSwap(uint256 id) public {
         Swap storage swap = swaps[id];
-        require(msg.sender == swap.seller, "Unauthorized call, cant cancel swap!" );
+        require(msg.sender == swap.seller, "Unauthorized call, cant cancel swap!");
         require(swap.active == true, "Swap is not active!");
 
         swap.active = false;
@@ -84,7 +86,7 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC20Interactions, E
         Swap storage swap = swaps[id];
         require(swap.active == true, "Swap is not active!");
 
-        if(swap.isNft == true){
+        if (swap.isNft == true) {
             // Set the NFT contract to perform actions
             _setNftContract(swap.wantNft);
             // Ensure that msg.sender owns the NFT
@@ -92,10 +94,9 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC20Interactions, E
             _transferNft(msg.sender, swap.seller, wantId);
 
             swap.active = false;
-        }
-        else{
+        } else {
             _setTokenContract(swap.wantToken);
-            
+
             require(_tokenBalance(msg.sender) >= swap.amount, "Dont have enough tokens!");
             _transferTokens(msg.sender, swap.seller, swap.amount);
 
@@ -108,12 +109,12 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC20Interactions, E
     }
 
     /**
-    * @dev Opens a new buy order for a specific NFT and ID or any NFT
-    * @param nftAddress the address of the NFT contract
-    * @param spesificId boolean indicating if the order is for a specific tokenId
-    * @param id the id of the NFT (if spesificId is true)
-    * @notice msg.value the value of the order in wei, must be greater than zero
-    */
+     * @dev Opens a new buy order for a specific NFT and ID or any NFT
+     * @param nftAddress the address of the NFT contract
+     * @param spesificId boolean indicating if the order is for a specific tokenId
+     * @param id the id of the NFT (if spesificId is true)
+     * @notice msg.value the value of the order in wei, must be greater than zero
+     */
     function openBuy(address nftAddress, bool spesificId, uint256 id) public payable noReentrancy {
         require(msg.value > 0, "Value must be greater than zero");
 
@@ -130,14 +131,14 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC20Interactions, E
     }
 
     /**
-    * @dev Cancels a buy order for NFT
-    * @param id the id of the buy order
-    * @notice msg.sender the address of the buyer, should be the same as the address
-    * that made the buy order
-    */
+     * @dev Cancels a buy order for NFT
+     * @param id the id of the buy order
+     * @notice msg.sender the address of the buyer, should be the same as the address
+     * that made the buy order
+     */
     function cancelBuy(uint256 id) public noReentrancy {
         Buy storage buy = buys[id];
-        require(msg.sender == buy.buyer, "Unauthorized call, cant cancel buy order!" );
+        require(msg.sender == buy.buyer, "Unauthorized call, cant cancel buy order!");
         require(buy.active == true, "Buy order is not active!");
 
         buy.active = false;
@@ -156,12 +157,12 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC20Interactions, E
     }
 
     /**
-    * @dev Creates a sell order for an NFT
-    * @param nft the address of the NFT contract
-    * @param tokenId the tokenId of the NFT to be sold
-    * @param amount the selling price for the NFT
-    * @notice msg.sender the address of the NFT owner
-    */
+     * @dev Creates a sell order for an NFT
+     * @param nft the address of the NFT contract
+     * @param tokenId the tokenId of the NFT to be sold
+     * @param amount the selling price for the NFT
+     * @notice msg.sender the address of the NFT owner
+     */
     function openSell(address nft, uint256 tokenId, uint256 amount) public noReentrancy {
         require(amount > 0, "Amount must be greater than zero");
 
@@ -181,11 +182,11 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC20Interactions, E
     }
 
     /**
-    * @dev Allows seller to cancel an open sell order and receive their NFT back
-    * @param id The ID of the sell order
-    * @notice Only the seller of the NFT can cancel the sell order
-    * @notice A protocol fee is charged for cancelling the sell order
-    */
+     * @dev Allows seller to cancel an open sell order and receive their NFT back
+     * @param id The ID of the sell order
+     * @notice Only the seller of the NFT can cancel the sell order
+     * @notice A protocol fee is charged for cancelling the sell order
+     */
     function cancelSell(uint256 id) public payable noReentrancy {
         // Retrieve sell order from storage
         Sell storage sell = sells[id];
@@ -217,11 +218,12 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC20Interactions, E
         emit CancelSell(id);
     }
     /**
-    * @dev Function to sell an NFT at a specific Buy order, also known as Atomic Swaps
-    * @param id The ID of the Buy order to sell to
-    * @param nft The address of the NFT contract of the NFT being sold
-    * @param tokenId The ID of the NFT being sold
-    */
+     * @dev Function to sell an NFT at a specific Buy order, also known as Atomic Swaps
+     * @param id The ID of the Buy order to sell to
+     * @param nft The address of the NFT contract of the NFT being sold
+     * @param tokenId The ID of the NFT being sold
+     */
+
     function sellAtomic(uint256 id, address nft, uint256 tokenId) public noReentrancy {
         // Retrieve the Buy order from storage
         Buy storage buy = buys[id];
@@ -251,12 +253,12 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC20Interactions, E
 
         // call payable function from the seller with the calculated amount
         (bool result0,) = payable(msg.sender).call{gas: (gasleft() - 10000), value: amount_}("");
-        // require that call must return true 
+        // require that call must return true
         require(result0, "Call must return true");
 
-        // call payable function to protocol 
+        // call payable function to protocol
         (bool result1,) = payable(protocol).call{gas: (gasleft() - 10000), value: protocolFee}("");
-        // require that call must return true 
+        // require that call must return true
         require(result1, "Call must return true");
 
         // Emit an event indicating that the Atomic Swap is complete
@@ -264,12 +266,12 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC20Interactions, E
     }
 
     /**
-    * @dev buy an NFT with a sell order ID
-    * @param id uint256 - ID of sell order
-    * @notice msg.value should be greater or equal than (sell.amount + sell.amount/fee)
-    * @notice call must return true on payable(seller).call and payable(protocol).call
-    * @notice _transferNft must complete successfully
-    */
+     * @dev buy an NFT with a sell order ID
+     * @param id uint256 - ID of sell order
+     * @notice msg.value should be greater or equal than (sell.amount + sell.amount/fee)
+     * @notice call must return true on payable(seller).call and payable(protocol).call
+     * @notice _transferNft must complete successfully
+     */
     function buyAtomic(uint256 id) public payable noReentrancy {
         Sell storage sell = sells[id];
         require(sell.active == true, "Sell order is not active!");
@@ -294,17 +296,18 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC20Interactions, E
         emit BoughtAtomic(msg.sender, id);
     }
     /**
-    * @dev Function to set the protocol address.
-    * @param protocol_ The address of the protocol.
-    */
+     * @dev Function to set the protocol address.
+     * @param protocol_ The address of the protocol.
+     */
+
     function setProtocol(address protocol_) public onlyOwner {
         protocol = protocol_;
     }
 
     /**
-    * @dev Allows the contract owner to set the transaction fee.
-    * @param fee_ The new transaction fee.
-    */
+     * @dev Allows the contract owner to set the transaction fee.
+     * @param fee_ The new transaction fee.
+     */
     function setFee(uint256 fee_) public onlyOwner {
         fee = fee_;
     }
