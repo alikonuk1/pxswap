@@ -36,15 +36,52 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC721Interactions {
         mutex = false;
     }
 
-    function openSwap(address nftGiven, address tokenWant, uint256 amount) public noReentrancy {
+    function openSwap(
+        address nftGiven,
+        uint256 tokenId,
+        bool isNft,
+        bool spesificId,
+        address wantNft, 
+        address wantToken, 
+        uint256 amount,
+        uint256 wantId 
+    ) public noReentrancy {
+        _setNftContract(nftGiven);
+        require(_nftBalance(msg.sender) >= 1, "Dont have enough nft!");
+        _transferNft(msg.sender, address(this), tokenId);
 
+        Swap memory swap;
+        swap.seller = msg.sender;
+        swap.giveNft = nftGiven;
+        swap.isNft = isNft;
+
+        if(isNft == true){
+            swap.wantNft = wantNft;
+            swap.spesificId = spesificId;
+
+            if(spesificId == true){
+                swap.wantId = wantId;
+                swap.active = true;
+                swaps.push(swap);
+            }
+            else{
+                swap.active = true; 
+                swaps.push(swap);
+            }
+        }
+        else{
+        swap.wantToken = wantToken;
+        swap.amount = amount;
+        swap.active = true;
+        swaps.push(swap);
+        }
     }
 
     function cancelSwap(uint256 id) public {
 
     }
 
-    function acceptSwap() public {
+    function acceptSwap(uint256 id) public {
 
     }
 
@@ -86,7 +123,6 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC721Interactions {
         uint256 amount = buy.amount;
         uint256 protocolFee = amount / fee;
         uint256 amount_ = amount - protocolFee;
-        address buyer = buy.buyer;
 
         (bool result0,) = payable(msg.sender).call{gas: (gasleft() - 10000), value: amount_}("");
         require(result0, "Call must return true");
@@ -190,8 +226,6 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC721Interactions {
         uint256 protocolFee = amount / fee;
         // Calculate the amount to be sent to seller
         uint256 amount_ = amount - protocolFee;
-        // store the address of the buyer
-        address buyer = buy.buyer;
 
         // call payable function from the seller with the calculated amount
         (bool result0,) = payable(msg.sender).call{gas: (gasleft() - 10000), value: amount_}("");

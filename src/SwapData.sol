@@ -26,9 +26,8 @@ contract SwapData {
         address seller;
         address wantNft;
         address giveNft;
-        address wantErc20;
+        address wantToken;
         uint256 amount;
         uint256 wantId;
-        uint256 giveId;
     }
 }
