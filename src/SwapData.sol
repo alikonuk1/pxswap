@@ -22,12 +22,13 @@ contract SwapData {
     struct Swap {
         bool active;
         bool isNft;
-        bool spesificId;
+/*         bool spesificId; */
         address seller;
         address wantNft;
         address giveNft;
         address wantToken;
         uint256 amount;
-        uint256 wantId;
+        uint256 giveId;
+/*         uint256 wantId; */
     }
 }

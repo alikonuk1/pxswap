@@ -9,7 +9,6 @@ contract ERC20Interactions {
     address private token;
 
     function _setTokenContract(address _token) internal {
-        require(token != _token, "ERC20Interactions: The new address is the same as the old one");
         emit TokenSet(msg.sender, _token);
         token = _token;
     }
@@ -24,8 +23,8 @@ contract ERC20Interactions {
         return tokenBalance;
     }
 
-    function _transferTokens(address from, address to, uint256 id) internal {
+    function _transferTokens(address from, address to, uint256 amount) internal {
         IERC20 _token = IERC20(token);
-        _token.transferFrom(from, to, id);
+        _token.transferFrom(from, to, amount);
     }
 }

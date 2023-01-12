@@ -13,7 +13,7 @@ import {PxswapERC721Receiver} from "./utils/PxswapERC721Receiver.sol";
   * @dev This contract is for buying and selling non-fungible tokens (NFTs)
   * through atomic swaps
   */
-contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC721Interactions {
+contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC20Interactions, ERC721Interactions {
     event OpenBuy(address nft, uint256 amount, bool spesificId, uint256 id);
     event CancelBuy(uint256 id);
     event CancelSell(uint256 id);
@@ -39,36 +39,28 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC721Interactions {
 
     function openSwap(
         address nftGiven,
-        uint256 tokenId,
+        uint256 giveId,
         bool isNft,
-        bool spesificId,
+/*         bool spesificId, */
         address wantNft, 
         address wantToken, 
-        uint256 amount,
-        uint256 wantId 
+        uint256 amount
+/*         uint256 wantId  */
     ) public noReentrancy {
         _setNftContract(nftGiven);
         require(_nftBalance(msg.sender) >= 1, "Dont have enough nft!");
-        _transferNft(msg.sender, address(this), tokenId);
+        _transferNft(msg.sender, address(this), giveId);
 
         Swap memory swap;
         swap.seller = msg.sender;
         swap.giveNft = nftGiven;
+        swap.giveId = giveId;
         swap.isNft = isNft;
 
         if(isNft == true){
             swap.wantNft = wantNft;
-            swap.spesificId = spesificId;
-
-            if(spesificId == true){
-                swap.wantId = wantId;
-                swap.active = true;
-                swaps.push(swap);
-            }
-            else{
-                swap.active = true; 
-                swaps.push(swap);
-            }
+            swap.active = true; 
+            swaps.push(swap);
         }
         else{
         swap.wantToken = wantToken;
@@ -88,8 +80,31 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC721Interactions {
         emit CancelSwap(id);
     }
 
-    function acceptSwap(uint256 id) public {
+    function acceptSwap(uint256 id, uint256 wantId) public {
+        Swap storage swap = swaps[id];
+        require(swap.active == true, "Swap is not active!");
 
+        if(swap.isNft == true){
+            // Set the NFT contract to perform actions
+            _setNftContract(swap.wantNft);
+            // Ensure that msg.sender owns the NFT
+            require(_nftBalance(msg.sender) >= 1, "Dont have enough nft!");
+            _transferNft(msg.sender, swap.seller, wantId);
+
+            swap.active = false;
+        }
+        else{
+            _setTokenContract(swap.wantToken);
+            
+            require(_tokenBalance(msg.sender) >= swap.amount, "Dont have enough tokens!");
+            _transferTokens(msg.sender, swap.seller, swap.amount);
+
+            swap.active = false;
+        }
+
+        _setNftContract(swap.giveNft);
+        require(_nftBalance(address(this)) >= 1, "Dont have enough nft!");
+        _transferNft(address(this), msg.sender, swap.giveId);
     }
 
     /**
