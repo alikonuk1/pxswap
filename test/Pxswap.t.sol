@@ -8,6 +8,8 @@ import "./mock/mockERC721.sol";
 contract PxswapTest is Test {
     Pxswap px;
     MockERC721 bayc;
+    MockERC721 punk;
+    MockERC721 butt;
 
     address creator = address(1);
     address seller1 = address(2);
@@ -24,6 +26,8 @@ contract PxswapTest is Test {
         px = new Pxswap();
         px.setProtocol(address(protocol));
         bayc = new MockERC721("MockBayc", "BAYC");
+        punk = new MockERC721("MockPunk", "PUNK");
+        butt = new MockERC721("MockButt", "BUTT");
         vm.stopPrank();
 
         //top up accounts with ether
@@ -39,12 +43,22 @@ contract PxswapTest is Test {
         bayc.mintTo(seller1);
         bayc.mintTo(seller1);
         bayc.mintTo(seller1);
+        punk.mintTo(seller1);
+        punk.mintTo(seller1);
+        punk.mintTo(seller1);
+        butt.mintTo(seller1);
+        butt.mintTo(seller1);
+        butt.mintTo(seller1);
         vm.stopPrank();
         vm.startPrank(seller2);
         bayc.mintTo(seller2);
+        punk.mintTo(seller2);
+        butt.mintTo(seller2);
         vm.stopPrank();
         vm.startPrank(seller3);
         bayc.mintTo(seller3);
+        punk.mintTo(seller3);
+        butt.mintTo(seller3);
         vm.stopPrank();
     }
 
@@ -233,5 +247,25 @@ contract PxswapTest is Test {
         vm.stopPrank();
     }
 
-    // TODO: FUZZzzZZzzZZzzZZzzZZzzZZzz
+    function testSuccess_openSwap() public {
+        vm.startPrank(seller1);
+        butt.approve(address(px), 1);
+        px.openSwap("[address(butt)]", 1, true, [address(punk)], address(0), 0);
+        vm.stopPrank();
+
+        vm.startPrank(seller2);
+        punk.approve(address(px), 4);
+        px.acceptSwap(0, [4]);
+        vm.stopPrank();
+
+        vm.startPrank(seller1);
+        punk.approve(address(px), 1);
+        px.openSwap([address(punk)], 1, true, address(bayc), address(0), 0);
+        vm.stopPrank();
+
+        vm.startPrank(address(seller3));
+        bayc.approve(address(px), 5);
+        px.acceptSwap(1, 5);
+        vm.stopPrank();
+    }
 }

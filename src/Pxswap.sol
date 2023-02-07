@@ -28,7 +28,11 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC20Interactions, E
 
     Buy[] public buys;
     Sell[] public sells;
+    OfferNft[] public offerNfts;
+    OfferToken[] public offerTokens;
+    SwapOrder[] public swapOrders;
     Swap[] public swaps;
+    /*     Basket[] public basket; */
 
     modifier noReentrancy() {
         require(!mutex, "Mutex is already set, reentrancy detected!");
@@ -37,75 +41,128 @@ contract Pxswap is SwapData, Ownable, PxswapERC721Receiver, ERC20Interactions, E
         mutex = false;
     }
 
-    function openSwap(
-        address nftGiven,
-        uint256 giveId,
-        bool isNft,
-        /*         bool spesificId, */
-        address wantNft,
-        address wantToken,
-        uint256 amount
-    )
-        /*         uint256 wantId  */
-        public
-        noReentrancy
-    {
-        _setNftContract(nftGiven);
-        require(_nftBalance(msg.sender) >= 1, "Dont have enough nft!");
-        _transferNft(msg.sender, address(this), giveId);
-
+    function openSwap(address[] memory nftsGiven, uint256[] memory giveIds) public noReentrancy {
+        for (uint256 i; i < nftsGiven.length; i++) {
+            _setNftContract(nftsGiven[i]);
+            require(_nftBalance(msg.sender) >= 1, "Dont have enough nft!");
+            _transferNft(msg.sender, address(this), giveIds[i]);
+        }
         Swap memory swap;
         swap.seller = msg.sender;
-        swap.giveNft = nftGiven;
-        swap.giveId = giveId;
-        swap.isNft = isNft;
+        swap.giveNft = nftsGiven;
+        swap.giveId = giveIds;
 
-        if (isNft == true) {
-            swap.wantNft = wantNft;
-            swap.active = true;
-            swaps.push(swap);
-        } else {
-            swap.wantToken = wantToken;
-            swap.amount = amount;
-            swap.active = true;
-            swaps.push(swap);
-        }
+        swap.active = true;
+        swaps.push(swap);
     }
 
-    function cancelSwap(uint256 id) public {
+    function cancelSwap(uint256 id) public noReentrancy {
         Swap storage swap = swaps[id];
         require(msg.sender == swap.seller, "Unauthorized call, cant cancel swap!");
         require(swap.active == true, "Swap is not active!");
 
         swap.active = false;
 
+        for (uint256 i; i < swap.giveNft.length; i++) {
+            _setNftContract(offerNft[i]);
+            require(_nftBalance(msg.sender) >= 1, "Dont have enough nft!");
+            _transferNft(address(this), msg.sender, swap.giveId[i]);
+        }
+
         emit CancelSwap(id);
     }
 
-    function acceptSwap(uint256 id, uint256 wantId) public {
+    function nftOffer(uint256 id, address[] memory nfts, uint256[] memory offerIds) public noReentrancy {
         Swap storage swap = swaps[id];
-        require(swap.active == true, "Swap is not active!");
-
-        if (swap.isNft == true) {
-            // Set the NFT contract to perform actions
-            _setNftContract(swap.wantNft);
-            // Ensure that msg.sender owns the NFT
+        OfferNft memory offerNft;
+        for (uint256 i; i < nfts.length; i++) {
+            _setNftContract(nfts[i]);
             require(_nftBalance(msg.sender) >= 1, "Dont have enough nft!");
-            _transferNft(msg.sender, swap.seller, wantId);
-
-            swap.active = false;
-        } else {
-            _setTokenContract(swap.wantToken);
-
-            require(_tokenBalance(msg.sender) >= swap.amount, "Dont have enough tokens!");
-            _transferTokens(msg.sender, swap.seller, swap.amount);
-
-            swap.active = false;
+            _transferNft(msg.sender, address(this), offerIds[i]);
         }
 
-        _setNftContract(swap.giveNft);
-        require(_nftBalance(address(this)) >= 1, "Dont have enough nft!");
-        _transferNft(address(this), msg.sender, swap.giveId);
+        offer.seller = msg.sender;
+        offer.nft = nfts;
+        offer.nftId = offerIds;
+
+        offer.active = true;
+        offers.push(offer);
+    }
+
+    function accetSwap(uint256 swapId, uint256 offerId) public noReentrancy {
+        Swap storage swap = swaps[id];
+        require(swap.seller == msg.sender);
+        
+    }
+
+    function openSwapOrder(
+        address[] memory nftsGiven,
+        uint256[] memory giveIds,
+        bool isNft,
+        address[] memory wantNfts,
+        address wantToken,
+        uint256 amount
+    ) public noReentrancy {
+        for (uint256 i; i < nftsGiven.length; i++) {
+            _setNftContract(nftsGiven[i]);
+            require(_nftBalance(msg.sender) >= 1, "Dont have enough nft!");
+            _transferNft(msg.sender, address(this), giveIds[i]);
+        }
+
+        SwapOrder memory swapOrder;
+        swapOrder.seller = msg.sender;
+        swapOrder.giveNft = nftsGiven;
+        swapOrder.giveId = giveIds;
+        swapOrder.isNft = isNft;
+
+        if (isNft == true) {
+            swapOrder.wantNft = wantNfts;
+            swapOrder.active = true;
+            swapOrders.push(swapOrder);
+        } else {
+            swapOrder.wantToken = wantToken;
+            swapOrder.amount = amount;
+            swapOrder.active = true;
+            swapOrders.push(swapOrder);
+        }
+    }
+
+    function cancelSwapOrder(uint256 id) public {
+        SwapOrder storage swapOrder = swapOrders[id];
+        require(msg.sender == swapOrder.seller, "Unauthorized call, cant cancel swap!");
+        require(swapOrder.active == true, "Swap is not active!");
+
+        swapOrder.active = false;
+
+        emit CancelSwap(id);
+    }
+
+    function acceptSwapOrder(uint256 id, uint256[] memory giveIds) public noReentrancy {
+        SwapOrder storage swapOrder = swapOrders[id];
+        require(swapOrder.active == true, "Swap is not active!");
+
+        if (swapOrder.isNft == true) {
+            for (uint256 i; i < swapOrder.wantNft.length; i++) {
+                // Set the NFT contract to perform actions
+                _setNftContract(swapOrder.wantNft[i]);
+                // Ensure that msg.sender owns the NFT
+                require(_nftBalance(msg.sender) >= 1, "Dont have enough nft!");
+                _transferNft(msg.sender, swapOrder.seller, giveIds[i]);
+            }
+            swapOrder.active = false;
+        } else {
+            _setTokenContract(swapOrder.wantToken);
+
+            require(_tokenBalance(msg.sender) >= swapOrder.amount, "Dont have enough tokens!");
+            _transferTokens(msg.sender, swapOrder.seller, swapOrder.amount);
+
+            swapOrder.active = false;
+        }
+        for (uint256 i = 0; i < swapOrder.wantNft.length; i++) {
+            _setNftContract(swapOrder.giveNft[i]);
+            require(_nftBalance(address(this)) >= 1, "Dont have enough nft!");
+            _transferNft(address(this), msg.sender, swapOrder.giveId[i]);
+        }
     }
 
     /**
